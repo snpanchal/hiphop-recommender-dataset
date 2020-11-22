@@ -4,10 +4,11 @@ from dotenv import load_dotenv
 
 
 class Album:
-    def __init__(self, id, name, explicit):
+    def __init__(self, id, name, explicit, artists):
         self.id = id
         self.name = name
         self.explicit = explicit
+        self.artists = artists
 
 
 def get_request_headers():
@@ -32,7 +33,7 @@ def get_request_headers():
 def remove_duplicates(albums_list):
     albums_map = {}
     for album in albums_list:
-        if ((not album.name.lower() in albums_map) or (not albums_map[album.name].explicit)):
+        if ((not album.name.lower() in albums_map) or (not albums_map[album.name.lower()].explicit)):
             albums_map[album.name.lower()] = album
 
     return list(albums_map.values())
