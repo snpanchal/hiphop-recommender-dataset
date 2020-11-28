@@ -33,7 +33,8 @@ def get_request_headers():
 def remove_duplicates(albums_list):
     albums_map = {}
     for album in albums_list:
-        if ((not album.name.lower() in albums_map) or (not albums_map[album.name.lower()].explicit)):
-            albums_map[album.name.lower()] = album
+        key = album.name.lower() + " " + album.artists
+        if ((not key in albums_map) or (not albums_map[key].explicit)):
+            albums_map[key] = album
 
     return list(albums_map.values())
