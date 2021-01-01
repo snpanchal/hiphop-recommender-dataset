@@ -1,40 +1,52 @@
 import pandas as pd
-import numpy as np
 import sqlite3
 from sklearn.metrics.pairwise import cosine_similarity
+from re import search
 
 
 def replace_separators(artists):
-    if artists != 'Tyler, The Creator':
-        return artists.replace(', ', ' | ')
+    if search('Devin the Dude, Lil\' Flip', artists):
+        return 'Devin the Dude, Lil\' Flip|Devin The Dude|Lil\' Flip'
+    elif artists != 'Tyler, The Creator':
+        return artists.replace(', ', '|')
     return artists
+
+
+def filter_out_rated_album(album):
+    return not df_albums_info.iloc[album[0]]['spotify_id'] in test_ratings.index
 
 
 db_con = sqlite3.connect('albums.db')
 df_albums = pd.read_sql_query('SELECT * FROM albums', db_con)
-df_albums_and_ids = df_albums[['spotify_id', 'name', 'artists']]
+df_albums_info = df_albums[['spotify_id', 'name', 'artists']]
 df_albums.drop(columns=['index', 'name', 'explicit'], inplace=True)
 df_albums.set_index('spotify_id', inplace=True)
 
 album_artists = df_albums['artists'].apply(replace_separators)
 df_albums.drop(columns='artists', inplace=True)
 
-print(album_artists)
+df_album_artists = album_artists.str.get_dummies()
+df_albums = pd.concat([df_albums, df_album_artists], axis=1)
 
 test_ratings = pd.Series({
-    '41GuZcammIkupMPKH2OJ6I': 5.0,
-    '6FED8aeieEnUWwQqAO9zT1': 5.0,
-    '42WVQWuf1teDysXiOupIZt': 5.0,
-    '4PWBTB6NYSKQwfo79I3prg': 5.0
+    '20r762YmB5HeofjMCiPMLv': 4.0,
+    '4Uv86qWpGTxf7fU7lG5X6F': 3.0,
+    '3WFTGIO6E3Xh4paEOBY9OU': 5.0,
+    '5ll74bqtkcXlKE7wwkMq4g': 4.5
 })
 total_score = 0
 for score in test_ratings:
     total_score += score
 test_ratings = test_ratings.map(lambda score: score / total_score)
 
-df_users = pd.DataFrame(columns=df_albums.columns)
 working_df = df_albums.mul(test_ratings, axis=0)
 user_profile = working_df.sum(axis=0)
+for album_id in test_ratings.index:
+    artists_value = df_albums_info[df_albums_info['spotify_id']
+                                   == album_id]['artists'].iloc[0]
+    album_artists = replace_separators(artists_value).split('|')
+    for artist in album_artists:
+        user_profile[artist] = 1
 
 df_albums = df_albums.append(user_profile, ignore_index=True)
 user_row_id = len(df_albums) - 1
@@ -44,23 +56,16 @@ similar_albums = []
 for i in range(len(cosine_sim[-1])):
     similar_albums.append((i, cosine_sim[-1][i]))
 recommended_albums = sorted(similar_albums, key=lambda a: a[1], reverse=True)
-print(recommended_albums)
 recommended_albums = list(filter(
-    lambda a: df_albums_and_ids.iloc[a[0]]['spotify_id'] in test_ratings.index,
-    recommended_albums
+    filter_out_rated_album, recommended_albums[1:]
 ))
-
-# for album_rated_id in test_ratings.index:
-#     index = int(df_albums_and_ids[df_albums_and_ids['spotify_id']
-#                                   == album_rated_id].index)
-#     print(index)
 
 for album in recommended_albums[1:11]:
     album_index = album[0]
     album_match = album[1]
 
-    album_id = df_albums_and_ids.iloc[album_index]['spotify_id']
-    album_name = df_albums_and_ids.iloc[album_index]['name']
+    album_id = df_albums_info.iloc[album_index]['spotify_id']
+    album_name = df_albums_info.iloc[album_index]['name']
     print('{} ({}), {}'.format(album_name, album_id, album_match))
 
 db_con.close()
