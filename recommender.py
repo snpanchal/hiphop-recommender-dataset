@@ -29,10 +29,8 @@ df_album_artists = album_artists.str.get_dummies()
 df_albums = pd.concat([df_albums, df_album_artists], axis=1)
 
 test_ratings = pd.Series({
-    '20r762YmB5HeofjMCiPMLv': 4.0,
-    '4Uv86qWpGTxf7fU7lG5X6F': 3.0,
-    '3WFTGIO6E3Xh4paEOBY9OU': 5.0,
-    '5ll74bqtkcXlKE7wwkMq4g': 4.5
+    '41GuZcammIkupMPKH2OJ6I': 5.0,
+    '4yP0hdKOZPNshxUOjY0cZj': 3.0
 })
 total_score = 0
 for score in test_ratings:
