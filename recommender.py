@@ -58,12 +58,13 @@ recommended_albums = list(filter(
     filter_out_rated_album, recommended_albums[1:]
 ))
 
-for album in recommended_albums[1:11]:
+for album in recommended_albums[1:21]:
     album_index = album[0]
     album_match = album[1]
 
     album_id = df_albums_info.iloc[album_index]['spotify_id']
     album_name = df_albums_info.iloc[album_index]['name']
-    print('{} ({}), {}'.format(album_name, album_id, album_match))
+    album_artists = df_albums_info.iloc[album_index]['artists']
+    print('{} - {} (by {}), {}'.format(album_id, album_name, album_artists, album_match))
 
 db_con.close()
