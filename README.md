@@ -1,4 +1,4 @@
-# hiphop-recommender-dataset-generation
+# hiphop-recommender-dataset
 This repo contains the Jupyter notebooks to collect the data and generate the dataset for my hip-hop album recommender application.
 
 To get the list of rappers to focus on, I used lists from https://www.ranker.com/ for the top rappers of all time, 2019, and 2020 and the top rap groups of all time:
