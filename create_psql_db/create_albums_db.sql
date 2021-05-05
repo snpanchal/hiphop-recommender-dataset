@@ -1,40 +1,40 @@
-DROP TABLE AlbumArtists;
-DROP TABLE AlbumFeatures;
-DROP TABLE Albums;
-DROP TABLE Artists;
+DROP TABLE album_artists;
+DROP TABLE album_features;
+DROP TABLE albums;
+DROP TABLE artists;
 
 -- Create Albums table
-CREATE TABLE Albums (
+CREATE TABLE albums (
     spotify_id CHAR(22) NOT NULL,
-    name VARCHAR(125) NOT NULL,
+    name VARCHAR(255) NOT NULL,
     PRIMARY KEY (spotify_id)
 );
 
-CREATE TEMPORARY TABLE TempAlbums (
+CREATE TEMPORARY TABLE temp_albums (
     spotify_id CHAR(22) NOT NULL,
-    name VARCHAR(125) NOT NULL,
-    artists VARCHAR(150) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    artists VARCHAR(255) NOT NULL,
     PRIMARY KEY (spotify_id)
 );
 
-\copy TempAlbums FROM 'Albums.csv' DELIMITER ',' CSV HEADER;
+\copy temp_albums FROM 'Albums.csv' DELIMITER ',' CSV HEADER;
 
-INSERT INTO Albums(spotify_id, name)
+INSERT INTO albums(spotify_id, name)
 SELECT spotify_id, name
-FROM TempAlbums;
+FROM temp_albums;
 
-DROP TABLE TempAlbums;
+DROP TABLE temp_albums;
 
 -- Create Artists table
-CREATE TABLE Artists (
+CREATE TABLE artists (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(40) NOT NULL
+    name VARCHAR(255) NOT NULL
 );
 
-\copy Artists FROM 'Artists.csv' DELIMITER ',' CSV HEADER;
+\copy artists FROM 'Artists.csv' DELIMITER ',' CSV HEADER;
 
 -- Create AlbumFeatures table
-CREATE TABLE AlbumFeatures (
+CREATE TABLE album_features (
     spotify_id CHAR(22) NOT NULL,
     explicit BOOLEAN,
     acousticness NUMERIC(11, 10),
@@ -50,25 +50,26 @@ CREATE TABLE AlbumFeatures (
     FOREIGN KEY (spotify_id) REFERENCES Albums(spotify_id)
 );
 
-\copy AlbumFeatures FROM 'AlbumFeatures.csv' DELIMITER ',' CSV HEADER;
+\copy album_features FROM 'AlbumFeatures.csv' DELIMITER ',' CSV HEADER;
 
 -- Create AlbumArtists table
-CREATE TABLE AlbumArtists (
-    spotify_id CHAR(22) NOT NULL,
+CREATE TABLE album_features (
+    album_id CHAR(22) NOT NULL,
     artist_id INTEGER NOT NULL,
-    FOREIGN KEY (spotify_id) REFERENCES Albums(spotify_id),
-    FOREIGN KEY (artist_id) REFERENCES Artists(id)
+    FOREIGN KEY (album_id) REFERENCES Albums(spotify_id),
+    FOREIGN KEY (artist_id) REFERENCES Artists(id),
+    PRIMARY KEY (album_id, artist_id)
 );
 
-CREATE TEMPORARY TABLE TempAlbumArtists (
-    spotify_id CHAR(22) NOT NULL,
-    artist VARCHAR(40) NOT NULL
+CREATE TEMPORARY TABLE temp_album_artists (
+    album_id CHAR(22) NOT NULL,
+    artist VARCHAR(255) NOT NULL
 );
 
-\copy TempAlbumArtists FROM 'AlbumArtists.csv' DELIMITER ',' CSV HEADER;
+\copy temp_album_artists FROM 'AlbumArtists.csv' DELIMITER ',' CSV HEADER;
 
-INSERT INTO AlbumArtists(spotify_id, artist_id)
-SELECT spotify_id, id AS artist_id
-FROM TempAlbumArtists INNER JOIN Artists ON TempAlbumArtists.artist = Artists.name;
+INSERT INTO album_artists(album_id, artist_id)
+SELECT album_id, id AS artist_id
+FROM temp_album_artists INNER JOIN Artists ON temp_album_artists.artist = artists.name;
 
-DROP TABLE TempAlbumArtists;
+DROP TABLE temp_album_artists;

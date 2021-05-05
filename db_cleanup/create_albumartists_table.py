@@ -15,6 +15,8 @@ for album_id in album_ids:
     for artist in album_artists:
         df_album_artists = df_album_artists.append({'spotify_id': album_id, 'artist': artist}, ignore_index=True)
 
+df_album_artists.drop_duplicates(keep='first', inplace=True)
+
 df_album_artists.to_sql('AlbumArtists', db_con, if_exists='replace', index=False)
 
 db_con.close()
